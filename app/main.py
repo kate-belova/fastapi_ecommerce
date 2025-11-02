@@ -15,6 +15,8 @@ logger.add(
     'info.log',
     format='Log: [{extra[log_id]}:{time} - {level} - {message}]',
     level='INFO',
+    rotation='10 MB',
+    retention='30 days',
     enqueue=True,
 )
 
