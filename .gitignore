@@ -43,3 +43,6 @@ ENV/
 
 # Linter
 pyproject.toml
+
+# Logs
+*.log
