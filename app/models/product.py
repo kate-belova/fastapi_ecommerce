@@ -31,7 +31,9 @@ class ProductModel(Base):
     seller_id: Mapped[int] = mapped_column(
         ForeignKey('users.id'), nullable=False, index=True
     )
-    rating: Mapped[float] = mapped_column(Float, default=0.0)
+    rating: Mapped[float] = mapped_column(
+        Float, default=0.0, server_default='0.0', nullable=False
+    )
 
     __table_args__ = (
         Index('ix_products_category_active', 'category_id', 'is_active'),

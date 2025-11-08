@@ -3,6 +3,7 @@ __all__ = [
     'CategoryResponseSchema',
     'ProductCreateRequestSchema',
     'ProductResponseSchema',
+    'ProductListResponseSchema',
     'UserCreateRequestSchema',
     'UserResponseSchema',
     'ReviewCreateRequestSchema',
@@ -16,6 +17,7 @@ from app.schemas.category import (
 from app.schemas.product import (
     ProductCreateRequestSchema,
     ProductResponseSchema,
+    ProductListResponseSchema,
 )
 from app.schemas.review import ReviewCreateRequestSchema, ReviewResponseSchema
 from app.schemas.user import UserCreateRequestSchema, UserResponseSchema
