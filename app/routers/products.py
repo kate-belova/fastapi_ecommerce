@@ -1,7 +1,7 @@
 from typing import Sequence
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, update, func
+from sqlalchemy import select, update, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -28,6 +28,9 @@ async def get_products(
     category_id: int | None = Query(
         None, description='ID категории для фильтрации'
     ),
+    search: str | None = Query(
+        None, min_length=1, description='Поиск по названию товара'
+    ),
     min_price: float | None = Query(
         None, ge=0, description='Минимальная цена товара'
     ),
@@ -36,16 +39,15 @@ async def get_products(
     ),
     in_stock: bool | None = Query(
         None,
-        description='true — только товары в наличии, false — только без остатка',
+        description='true — только товары в наличии, '
+        'false — только без остатка',
     ),
     seller_id: int | None = Query(
         None, description='ID продавца для фильтрации'
     ),
     db: AsyncSession = Depends(get_async_db),
 ) -> ProductListResponseSchema:
-    """
-    Возвращает список всех активных товаров.
-    """
+
     if (
         min_price is not None
         and max_price is not None
@@ -71,19 +73,44 @@ async def get_products(
     if seller_id is not None:
         filters.append(ProductModel.seller_id == seller_id)
 
-    total_stmt = select(func.count(ProductModel.id)).where(*filters)
+    total_stmt = select(func.count()).select_from(ProductModel).where(*filters)
+
+    rank_col = None
+    if search:
+        search_value = search.strip()
+        if search_value:
+            ts_query = func.websearch_to_tsquery('english', search_value)
+            filters.append(ProductModel.tsv.op('@@')(ts_query))
+            rank_col = func.ts_rank_cd(ProductModel.tsv, ts_query).label(
+                'rank'
+            )
+            total_stmt = (
+                select(func.count()).select_from(ProductModel).where(*filters)
+            )
+
     total = await db.scalar(total_stmt) or 0
 
-    get_products_stmt = (
-        select(ProductModel)
-        .join(CategoryModel)
-        .where(CategoryModel.is_active == True, *filters)
-        .order_by(ProductModel.id)
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-    )
-    result = await db.scalars(get_products_stmt)
-    products = result.all()
+    if rank_col is not None:
+        products_stmt = (
+            select(ProductModel, rank_col)
+            .where(*filters)
+            .order_by(desc(rank_col), ProductModel.id)
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        )
+        result = await db.execute(products_stmt)
+        rows = result.all()
+        products = [row[0] for row in rows]
+    else:
+        products_stmt = (
+            select(ProductModel)
+            .where(*filters)
+            .order_by(ProductModel.id)
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        )
+        result = await db.scalars(products_stmt)
+        products = result.all()
 
     product_schemas = [
         ProductResponseSchema.model_validate(product) for product in products

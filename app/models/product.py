@@ -3,8 +3,9 @@ from typing import TYPE_CHECKING
 
 # fmt: off
 from sqlalchemy import (String, Integer, Boolean,
-    Numeric, ForeignKey, Float, Index
-)
+                        Numeric, ForeignKey, Float, Index, Computed
+                        )
+from sqlalchemy.dialects.postgresql import TSVECTOR
 # fmt: on
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -34,10 +35,17 @@ class ProductModel(Base):
     rating: Mapped[float] = mapped_column(
         Float, default=0.0, server_default='0.0', nullable=False
     )
-
-    __table_args__ = (
-        Index('ix_products_category_active', 'category_id', 'is_active'),
-        Index('ix_products_price_stock', 'price', 'stock'),
+    tsv: Mapped[TSVECTOR] = mapped_column(
+        TSVECTOR,
+        Computed(
+            """
+            setweight(to_tsvector('english', coalesce(name, '')), 'A')
+            || 
+            setweight(to_tsvector('english', coalesce(description, '')), 'B')
+            """,
+            persisted=True,
+        ),
+        nullable=False,
     )
 
     category: Mapped['CategoryModel'] = relationship(
@@ -48,4 +56,10 @@ class ProductModel(Base):
     )
     reviews: Mapped[list['ReviewModel']] = relationship(
         'ReviewModel', cascade='all, delete-orphan', back_populates='product'
+    )
+
+    __table_args__ = (
+        Index('ix_products_category_active', 'category_id', 'is_active'),
+        Index('ix_products_price_stock', 'price', 'stock'),
+        Index('ix_products_tsv_gin', 'tsv', postgresql_using='gin'),
     )
