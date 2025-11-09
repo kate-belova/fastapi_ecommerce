@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.connection import Base
 
 if TYPE_CHECKING:
-    from app.models import ProductModel, ReviewModel
+    from app.models import ProductModel, ReviewModel, CartItemModel
 
 
 class UserModel(Base):
@@ -27,6 +27,9 @@ class UserModel(Base):
     )
     reviews: Mapped[list['ReviewModel']] = relationship(
         'ReviewModel', cascade='all, delete-orphan', back_populates='user'
+    )
+    cart_items: Mapped[list['CartItemModel']] = relationship(
+        'CartItemModel', cascade='all, delete-orphan', back_populates='user'
     )
 
     CheckConstraint(

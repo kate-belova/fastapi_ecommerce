@@ -13,7 +13,7 @@ from app.database.connection import Base
 from app.models import CategoryModel
 
 if TYPE_CHECKING:
-    from app.models import ReviewModel, UserModel
+    from app.models import ReviewModel, UserModel, CartItemModel
 
 
 class ProductModel(Base):
@@ -56,6 +56,9 @@ class ProductModel(Base):
     )
     reviews: Mapped[list['ReviewModel']] = relationship(
         'ReviewModel', cascade='all, delete-orphan', back_populates='product'
+    )
+    cart_items: Mapped[list['CartItemModel']] = relationship(
+        'CartItemModel', cascade='all, delete-orphan', back_populates='product'
     )
 
     __table_args__ = (

@@ -8,8 +8,18 @@ __all__ = [
     'UserResponseSchema',
     'ReviewCreateRequestSchema',
     'ReviewResponseSchema',
+    'CartItemResponseSchema',
+    'CartResponseSchema',
+    'CartItemCreateSchema',
+    'CartItemUpdateSchema',
 ]
 
+from app.schemas.cart import (
+    CartResponseSchema,
+    CartItemResponseSchema,
+    CartItemCreateSchema,
+    CartItemUpdateSchema,
+)
 from app.schemas.category import (
     CategoryCreateRequestSchema,
     CategoryResponseSchema,
