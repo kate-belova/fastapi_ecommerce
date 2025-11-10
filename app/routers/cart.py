@@ -49,6 +49,17 @@ async def _get_cart_item(
     return cart_item
 
 
+async def clear_user_cart(db: AsyncSession, user_id: int) -> None:
+    """
+    Сервисная функция для очистки корзины пользователя.
+    Может использоваться как в эндпоинтах, так и в других сервисах.
+    """
+    clear_user_cart_stmt = delete(CartItemModel).where(
+        CartItemModel.user_id == user_id
+    )
+    await db.execute(clear_user_cart_stmt)
+
+
 @cart_router.get(
     '/',
     summary='Получить содержимое корзины',
@@ -199,8 +210,6 @@ async def clear_cart(
     Удаляются все записи CartItemModel, где user_id соответствует
     авторизованному пользователю, приславшему запрос.
     """
-    await db.execute(
-        delete(CartItemModel).where(CartItemModel.user_id == current_user.id)
-    )
+    await clear_user_cart(db, current_user.id)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -10,10 +10,15 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.connection import Base
-from app.models import CategoryModel
 
 if TYPE_CHECKING:
-    from app.models import ReviewModel, UserModel, CartItemModel
+    from app.models import (
+        ReviewModel,
+        UserModel,
+        CartItemModel,
+        CategoryModel,
+        OrderItemModel,
+    )
 
 
 class ProductModel(Base):
@@ -59,6 +64,9 @@ class ProductModel(Base):
     )
     cart_items: Mapped[list['CartItemModel']] = relationship(
         'CartItemModel', cascade='all, delete-orphan', back_populates='product'
+    )
+    order_items: Mapped[list['OrderItemModel']] = relationship(
+        'OrderItemModel', back_populates='product'
     )
 
     __table_args__ = (
