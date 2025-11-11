@@ -46,3 +46,9 @@ pyproject.toml
 
 # Logs
 *.log
+
+# Images
+*.jpg
+*.jpeg
+*.png
+*.webp

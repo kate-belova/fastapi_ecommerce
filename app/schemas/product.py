@@ -1,5 +1,7 @@
 from decimal import Decimal
+from typing import Annotated
 
+from fastapi import Form
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -20,15 +22,29 @@ class ProductCreateRequestSchema(BaseModel):
         description='Описание товара (до 500 символов)',
     )
     price: Decimal = Field(gt=0, description='Цена товара (больше 0)')
-    image_url: str | None = Field(
-        default=None, max_length=200, description='URL изображения товара'
-    )
     stock: int = Field(
         ge=0, description='Количество товара на складе (0 или больше)'
     )
     category_id: int = Field(
         description='ID категории, к которой относится товар'
     )
+
+    @classmethod
+    def as_form(
+        cls,
+        name: Annotated[str, Form(...)],
+        price: Annotated[Decimal, Form(...)],
+        stock: Annotated[int, Form(...)],
+        category_id: Annotated[int, Form(...)],
+        description: Annotated[str | None, Form()] = None,
+    ) -> 'ProductCreateRequestSchema':
+        return cls(
+            name=name,
+            description=description,
+            price=price,
+            stock=stock,
+            category_id=category_id,
+        )
 
 
 class ProductResponseSchema(BaseModel):

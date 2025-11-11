@@ -1,3 +1,4 @@
+from pathlib import Path
 from uuid import uuid4
 
 import uvicorn
@@ -6,10 +7,17 @@ from loguru import logger
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+from starlette.staticfiles import StaticFiles
 
 from app.routers import routers
 
 app = FastAPI(title='FastAPI Интернет-магазин')
+
+BASE_DIR = Path(__file__).parent.parent
+MEDIA_DIR = BASE_DIR / 'media'
+MEDIA_DIR.mkdir(exist_ok=True)
+
+app.mount('/media', StaticFiles(directory=str(MEDIA_DIR)), name='media')
 
 logger.add(
     'info.log',
