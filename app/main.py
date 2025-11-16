@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -50,6 +51,19 @@ async def log_middleware(request: Request, call_next):
 
 for router in routers:
     app.include_router(router)
+
+
+@app.get('/health', summary='Проверить работоспособность сервиса')
+async def health_check() -> dict[str, str]:
+    """
+    Проверка работоспособности сервиса.
+    """
+
+    return {
+        'status': 'healthy',
+        'timestamp': datetime.now(timezone.utc).isoformat(),
+        'service': 'FastAPI Ecommerce',
+    }
 
 
 @app.get('/', summary='Получить приветствие')

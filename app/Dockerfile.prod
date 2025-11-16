@@ -1,0 +1,35 @@
+FROM python:3.12-slim
+
+ENV HOME=/home/fast \
+    APP_HOME=/home/fast/app \
+    PYTHONPATH="$PYTHONPATH:/home/fast" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    MAX_WORKERS=4 \
+    WEB_CONCURRENCY=4
+
+RUN mkdir -p $APP_HOME \
+ && groupadd -r fast \
+ && useradd -r -g fast fast
+
+WORKDIR $HOME
+
+COPY requirements.txt ./
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    gcc \
+    python3-dev \
+    && pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt gunicorn \
+    && apt-get remove -y gcc python3-dev \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY app $APP_HOME
+COPY alembic.ini ./
+
+RUN mkdir -p media && chown -R fast:fast $HOME
+
+USER fast
