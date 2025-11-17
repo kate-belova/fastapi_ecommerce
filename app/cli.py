@@ -142,5 +142,187 @@ def promote_to_admin(email):
     asyncio.run(_promote_to_admin())
 
 
+@cli.command()
+def populate_test_data():
+    """Populate database with test categories and products"""
+
+    async def _populate_test_data():
+        from decimal import Decimal
+        from sqlalchemy import select
+        from app.models import CategoryModel, ProductModel
+
+        async with async_session_maker() as session:
+            existing_categories = await session.scalar(select(CategoryModel))
+            if existing_categories:
+                click.echo(
+                    'ℹ️ Database already contains data, skipping population'
+                )
+                return
+
+            admin = await session.scalar(
+                select(UserModel).where(UserModel.role == 'admin')
+            )
+            if not admin:
+                click.echo('❌ No admin user found! Create admin first.')
+                return
+
+            click.echo('📦 Creating test data...')
+
+            categories_data = [
+                {'name': 'Смартфоны и гаджеты'},
+                {'name': 'Ноутбуки и компьютеры'},
+                {'name': 'Техника для дома'},
+                {'name': 'Программирование'},
+                {'name': 'Художественная литература'},
+                {'name': 'Научпоп и образование'},
+            ]
+
+            categories = {}
+            for cat_data in categories_data:
+                category = CategoryModel(**cat_data)
+                session.add(category)
+                categories[cat_data['name']] = category
+
+            await session.flush()
+
+            electronics_products = [
+                {
+                    'name': 'iPhone 15 Pro 128GB',
+                    'description': 'Флагманский смартфон Apple с титановым '
+                    'корпусом и камерой 48 МП',
+                    'price': Decimal('109999.00'),
+                    'stock': 15,
+                    'category_id': categories['Смартфоны и гаджеты'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'Samsung Galaxy S24 Ultra 256GB',
+                    'description': 'Смартфон с AI-функциями и стилусом S Pen, '
+                    'экран 6.8"',
+                    'price': Decimal('89999.00'),
+                    'stock': 12,
+                    'category_id': categories['Смартфоны и гаджеты'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'Xiaomi Redmi Note 13 Pro 8/256GB',
+                    'description': 'Смартфон с AMOLED экраном '
+                    'и камерой 200 МП',
+                    'price': Decimal('34999.00'),
+                    'stock': 25,
+                    'category_id': categories['Смартфоны и гаджеты'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'MacBook Air M3 13" 8/256GB',
+                    'description': 'Ультрабук Apple на чипе M3, '
+                    'Retina дисплей',
+                    'price': Decimal('129999.00'),
+                    'stock': 8,
+                    'category_id': categories['Ноутбуки и компьютеры'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'ASUS ROG Strix G16 Gaming Laptop',
+                    'description': 'Игровой ноутбук с RTX 4060 и '
+                    'процессором Intel Core i7',
+                    'price': Decimal('149999.00'),
+                    'stock': 5,
+                    'category_id': categories['Ноутбуки и компьютеры'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'Dyson V15 Detect Absolute',
+                    'description': 'Беспроводной пылесос '
+                    'с лазерной подсветкой и HEPA фильтром',
+                    'price': Decimal('59999.00'),
+                    'stock': 10,
+                    'category_id': categories['Техника для дома'].id,
+                    'seller_id': admin.id,
+                },
+            ]
+
+            books_products = [
+                {
+                    'name': 'Чистый код. Создание, анализ и рефакторинг',
+                    'description': 'Роберт Мартин - '
+                    'классика для программистов '
+                    'о написании качественного кода',
+                    'price': Decimal('1899.00'),
+                    'stock': 30,
+                    'category_id': categories['Программирование'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'Совершенный код. Мастер-класс',
+                    'description': 'Стив Макконнелл - полное '
+                    'руководство по разработке ПО',
+                    'price': Decimal('2499.00'),
+                    'stock': 20,
+                    'category_id': categories['Программирование'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'Python. К вершинам мастерства',
+                    'description': 'Лучано Рамальо - '
+                    'углубленное руководство по Python',
+                    'price': Decimal('2199.00'),
+                    'stock': 25,
+                    'category_id': categories['Программирование'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': '1984',
+                    'description': 'Джордж Оруэлл - классика антиутопии',
+                    'price': Decimal('599.00'),
+                    'stock': 50,
+                    'category_id': categories['Художественная литература'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'Три товарища',
+                    'description': 'Эрих Мария Ремарк - '
+                    'роман о дружбе и любви',
+                    'price': Decimal('799.00'),
+                    'stock': 35,
+                    'category_id': categories['Художественная литература'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'Краткая история времени',
+                    'description': 'Стивен Хокинг - '
+                    'о природе пространства и времени',
+                    'price': Decimal('1299.00'),
+                    'stock': 28,
+                    'category_id': categories['Научпоп и образование'].id,
+                    'seller_id': admin.id,
+                },
+                {
+                    'name': 'Sapiens. Краткая история человечества',
+                    'description': 'Юваль Ной Харари - '
+                    'бестселлер об эволюции человечества',
+                    'price': Decimal('1599.00'),
+                    'stock': 22,
+                    'category_id': categories['Научпоп и образование'].id,
+                    'seller_id': admin.id,
+                },
+            ]
+
+            all_products = electronics_products + books_products
+            for prod_data in all_products:
+                product = ProductModel(**prod_data)
+                session.add(product)
+
+            await session.commit()
+            click.echo(
+                f'✅ Created {len(categories_data)} categories '
+                f'and {len(all_products)} products!'
+            )
+            click.echo('📱 Electronics: 6 products')
+            click.echo('📚 Books: 7 products')
+
+    asyncio.run(_populate_test_data())
+
+
 if __name__ == '__main__':
     cli()
