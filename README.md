@@ -8,7 +8,26 @@
 
 Современная платформа электронной коммерции с REST API, построенная на FastAPI с асинхронной поддержкой, аутентификацией JWT и иерархической системой категорий.
 
-## ✨ Особенности
+## 🌐 Продакшен-сервер
+
+**🚀 Приложение развернуто и доступно онлайн:**
+- **Основной домен:** [https://fastapi-ecommerce.online](https://fastapi-ecommerce.online)
+- **Документация API:** [https://fastapi-ecommerce.online/docs](https://fastapi-ecommerce.online/docs)
+- **Health Check:** [https://fastapi-ecommerce.online/health](https://fastapi-ecommerce.online/health)
+
+### 🏗️ Продакшен архитектура
+```
+Users → Cloudflare -> Nginx (Port 80) → Gunicorn + Uvicorn Workers → FastAPI → PostgreSQL
+                     ↗
+              Статические файлы и медиа
+```
+
+### 🔒 Безопасность продакшена
+- ✅ **HTTPS/SSL** - Сертификат Let's Encrypt
+- ✅ **Автоматический редирект** HTTP → HTTPS
+- ✅ **HSTS заголовки** - Усиленная безопасность
+- ✅ **Firewall** - Защита на уровне сети
+- ✅ **Изолированные контейнеры** - Docker security
 
 - **🔐 Аутентификация JWT** - Access и Refresh токены с ролевой системой
 - **🛍️ Управление товарами** - Полный CRUD для товаров с привязкой к категориям
@@ -105,6 +124,11 @@ app/
 
 ## 🐳 Продакшен деплой с Docker
 
+### 🌐 Активное развертывание
+Приложение уже развернуто на продакшен-сервере и доступно по адресу:
+- **Production URL:** [https://fastapi-ecommerce.online](https://fastapi-ecommerce.online)
+- **API Documentation:** [https://fastapi-ecommerce.online/docs](https://fastapi-ecommerce.online/docs)
+
 ### Настройка Docker Compose
 Проект включает полную продакшен-конфигурацию с Docker Compose:
 
@@ -115,25 +139,6 @@ docker-compose -f docker-compose.prod.yml up -d --build
 # Dev окружение  
 docker-compose up -d
 ```
-
-### 🏗️ Продакшен архитектура
-```
-Users → Nginx (Port 80) → Gunicorn + Uvicorn Workers → FastAPI → PostgreSQL
-                     ↗
-              Статические файлы и медиа
-```
-
-### 🔧 Продакшен возможности
-- 🛡️ Nginx Reverse Proxy - Единая точка входа, обслуживание статических файлов
-- ⚡ Gunicorn + Uvicorn Workers - 4 воркера для обработки запросов
-- 🔒 Security - Прямой доступ к приложению закрыт, только через Nginx
-- 🏥 Health Checks - Автоматический мониторинг состояния сервисов
-- 🔄 Auto-restart - Автоматическое восстановление при сбоях
-
-### 📦 Сервисы в контейнерах
-- web - FastAPI приложение с Gunicorn (4 workers)
-- db - PostgreSQL база данных
-- nginx - Reverse proxy и статические файлы
 
 ### 🔐 Конфигурация окружения
 Создайте ```.env``` файл:
@@ -162,6 +167,9 @@ docker-compose -f docker-compose.prod.yml exec web alembic upgrade head
 # Создать администратора
 docker-compose -f docker-compose.prod.yml exec web python -m app.cli create-default-admin
 
+# Заполнить базу тестовыми данными
+docker-compose -f docker-compose.prod.yml exec web python -m app.cli populate-test-data
+
 # Показать всех администраторов
 docker-compose -f docker-compose.prod.yml exec web python -m app.cli list-admins
 
@@ -170,15 +178,15 @@ docker-compose -f docker-compose.prod.yml logs -f
 ```
 
 ### 🌐 Точки доступа
-- Документация API: http://localhost/docs
-- Проверка работоспособности сервиса: http://localhost/health
-- Основное приложение: http://localhost/
-- Медиа файлы: http://localhost/media/
+- **Продакшен:** [https://fastapi-ecommerce.online](https://fastapi-ecommerce.online)
+- **Документация API:** [https://fastapi-ecommerce.online/docs](https://fastapi-ecommerce.online/docs)
+- **Проверка работоспособности сервиса:** [https://fastapi-ecommerce.online/health](https://fastapi-ecommerce.online/health)
+- **Медиа файлы:** [https://fastapi-ecommerce.online/media/](https://fastapi-ecommerce.online/media/)
 
 ## 📚 API Документация
 После запуска приложения доступна интерактивная документация:
-- Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)  
-- ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **Swagger UI:** [https://fastapi-ecommerce.online/docs](https://fastapi-ecommerce.online/docs)  
+- **ReDoc:** [https://fastapi-ecommerce.online/redoc](https://fastapi-ecommerce.online/redoc)
 
 ## 👤 Ролевая система
 
@@ -408,3 +416,8 @@ alembic downgrade -1
 ```
 Log: [log_id:timestamp - LEVEL - message]
 ```
+
+## 👩‍💻 Контакты
+- **GitHub:** [kate-belova](https://github.com/kate-belova)
+- **Проект:** [FastAPI E-commerce Platform](https://github.com/kate-belova/fastapi_ecommerce)
+- **Продакшен:** [https://fastapi-ecommerce.online](https://fastapi-ecommerce.online)
