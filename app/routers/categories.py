@@ -5,8 +5,9 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
+from app.core.security import get_current_user
 from app.database.depends import get_async_db
-from app.models import CategoryModel
+from app.models import CategoryModel, UserModel
 from app.schemas import CategoryCreateRequestSchema, CategoryResponseSchema
 
 categories_router = APIRouter(prefix='/categories', tags=['categories'])
@@ -40,10 +41,19 @@ async def get_categories(
 async def create_category(
     category: CategoryCreateRequestSchema,
     db: AsyncSession = Depends(get_async_db),
+    current_user: UserModel = Depends(get_current_user),
 ) -> CategoryModel | None:
     """
     Создаёт новую категорию товаров.
+    Только для администраторов.
     """
+
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Создавать категории могут только администраторы',
+        )
+
     if category.parent_id is not None:
         get_parent_stmt = select(CategoryModel).where(
             CategoryModel.id == category.parent_id,
@@ -74,10 +84,18 @@ async def update_category(
     category_id: int,
     category_to_update: CategoryCreateRequestSchema,
     db: AsyncSession = Depends(get_async_db),
+    current_user: UserModel = Depends(get_current_user),
 ) -> CategoryModel | None:
     """
     Обновляет категорию по её ID.
     """
+
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Обновлять категории могут только администраторы',
+        )
+
     get_category_stmt = select(CategoryModel).where(
         CategoryModel.id == category_id, CategoryModel.is_active == True
     )
@@ -129,11 +147,21 @@ async def update_category(
     summary='Логически удалить (сделать неактивной) категорию по ее id',
 )
 async def delete_category(
-    category_id: int, db: AsyncSession = Depends(get_async_db)
+    category_id: int,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: UserModel = Depends(get_current_user),
 ) -> dict[str, str] | None:
     """
     Логически удаляет категорию по её ID, устанавливая is_active=False.
+    Только для администраторов.
     """
+
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Удалять категории могут только администраторы',
+        )
+
     get_category_stmt = select(CategoryModel).where(
         CategoryModel.id == category_id, CategoryModel.is_active == True
     )
